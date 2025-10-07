@@ -113,18 +113,16 @@ jobs:
             --subject "fix: merge ${{ env.bugfix_name }}" \
             --body "Merge automático do bugfix ${{ env.bugfix_name }} para a branch de desenvolvimento"
         env:
-
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Processar release
         if: env.approved == 'true' && env.branch_type == 'release'
         run: |
-
           echo "Processando release: v${{ env.version }}"
           
           # Fazer merge da PR para main
           gh pr merge ${{ github.event.pull_request.number }} \
             --merge \
-
             --auto \
             --delete-branch \
             --subject "release: v${{ env.version }}" \
@@ -165,7 +163,19 @@ jobs:
           sleep 5
           
           # A branch de release já foi deletada automaticamente pelo merge
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Processar hotfix
+        if: env.approved == 'true' && env.branch_type == 'hotfix'
+        run: |
+          echo "Processando hotfix: v${{ env.version }}"
+          
+          # Fazer merge da PR para main
           gh pr merge ${{ github.event.pull_request.number }} \
+            --merge \
+            --auto \
+            --delete-branch \
             --subject "hotfix: v${{ env.version }}" \
             --body "Hotfix v${{ env.version }}"
           
@@ -198,23 +208,11 @@ jobs:
           git merge origin/main --no-ff -m "chore: sync main into $DEV_BRANCH after hotfix v${{ env.version }}"
           
           # Fazer push direto para a branch de desenvolvimento
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}           git push origin $DEV_BRANCH
+          git push origin $DEV_BRANCH
           
-          # A branch de hotfix já foi deletada automaticamente pelo merge
           # Aguardar o merge e sincronização serem concluídos
           sleep 5
           
-            --merge \
-            --auto \
-            --delete-branch \
-          echo "Processando hotfix: v${{ env.version }}"
-          
-          # Fazer merge da PR para main
-      - name: Processar hotfix
-        if: env.approved == 'true' && env.branch_type == 'hotfix'
-        run: |
+          # A branch de hotfix já foi deletada automaticamente pelo merge
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
